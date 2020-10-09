@@ -9,6 +9,7 @@ import socket
 import json
 import sys
 import os
+import signal
 
 from ipcqueue import posixmq
 import daemon
@@ -28,9 +29,10 @@ class BeaconServer:
     """
     DEFAULT_BUFFER_SIZE = 2048
 
-    def __init__(self, ip_port: Tuple[str, int], queue_id: str):
+    def __init__(self, ip_port: Tuple[str, int], queue_id: str, queue_size: int):
         self.ip_port = ip_port
         self.queue_id = queue_id
+        self.queue_size = queue_size
 
         self.sock: socket.socket
         self.ipc_queue: posixmq.Queue
@@ -46,7 +48,7 @@ class BeaconServer:
         if not (isinstance(self.queue_id, str) and self.queue_id.startswith("/") and len(self.queue_id) < 255):
             raise ValueError("Invalid queue id")
 
-        self.ipc_queue = posixmq.Queue(name=self.queue_id)
+        self.ipc_queue = posixmq.Queue(name=self.queue_id, maxsize=self.queue_size)
 
     def start(self):
         """
@@ -62,6 +64,18 @@ class BeaconServer:
                 # queue is full -> nobody's listening on the other side. nothing to do.
                 pass
 
+    def cleanup(self):
+        """
+        clean up any open resources (queue and socket)
+        :return:
+        """
+        print("shutting server down")
+        if self.sock:
+            self.sock.close()
+
+        if self.ipc_queue:
+            self.ipc_queue.close()
+
 
 class ServerFactory:
     """
@@ -74,8 +88,9 @@ class ServerFactory:
             ip = config['if_ip']
             port = config['listen_port']
             queue_id = config['queue_id']
+            queue_size = config['queue_size']
 
-            return BeaconServer(ip_port=(ip, port), queue_id=queue_id)
+            return BeaconServer(ip_port=(ip, port), queue_id=queue_id, queue_size=queue_size)
 
     @staticmethod
     def _validate_config_file(config: Dict):
@@ -92,22 +107,28 @@ class ServerFactory:
             raise ConfigFileInvalidError("listen_port missing in config file")
         if "queue_id" not in config.keys():
             raise ConfigFileInvalidError("queue_id missing in config file")
+        if "queue_size" not in config.keys():
+            raise ConfigFileInvalidError("queue_size missing in config file")
 
 
-def main():
+def main(daemon_context: daemon.DaemonContext):
     factory = ServerFactory()
     server = factory.from_config_file("config.json")
+
+    # set termination callback
+    daemon_context.signal_map[signal.SIGTERM] = server.cleanup
     server.start()
 
 
 if __name__ == '__main__':
-    # start beacon as daemon
     # TODO: optionally get config file path from stdin
     config_file = open("config.json", 'r')
+
     with daemon.DaemonContext(
-            files_preserve=[config_file],
-            chroot_directory=None,
-            stderr=sys.stderr,  # if any, errors shall be printed to stderr
-            working_directory=os.getcwd()
-    ):
-        main()
+        files_preserve=[config_file],
+        chroot_directory=None,
+        stderr=sys.stderr,  # if any, errors shall be printed to stderr
+        working_directory=os.getcwd()
+    ) as context:
+        # start beacon_server as daemon
+        main(context)
