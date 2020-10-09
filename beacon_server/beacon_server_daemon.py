@@ -111,11 +111,3 @@ if __name__ == '__main__':
             working_directory=os.getcwd()
     ):
         main()
-
-# msg, node = (
-#     b'\x80\x04\x95\x89\x00\x00\x00\x00\x00\x00\x00}\x94(\x8c\x08platform\x94\x8c,'
-#     b'Linux-5.4.0-48-generic-x86_64-with-glibc2.29\x94\x8c\x06system\x94\x8c\x05Linux'
-#     b'\x94\x8c\x03cpu\x94\x8c\x06x86_64\x94\x8c\tcpu_usage\x94G@\x04\x00\x00\x00\x00\x00'
-#     b'\x00\x8c\tmem_usage\x94G@I\x10pP\x83\xc4\x8au.',
-#     ('127.0.0.1', 59338)
-# )
