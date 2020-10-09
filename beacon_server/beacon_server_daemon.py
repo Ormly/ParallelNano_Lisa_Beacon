@@ -69,7 +69,6 @@ class BeaconServer:
         clean up any open resources (queue and socket)
         :return:
         """
-        print("shutting server down")
         if self.sock:
             self.sock.close()
 
