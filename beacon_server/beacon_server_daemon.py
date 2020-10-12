@@ -57,9 +57,9 @@ class BeaconServer:
         :return:
         """
         while True:
-            msg_and_node = self.sock.recvfrom(self.DEFAULT_BUFFER_SIZE)
+            msg = self.sock.recv(self.DEFAULT_BUFFER_SIZE)
             try:
-                self.ipc_queue.put_nowait(msg_and_node)
+                self.ipc_queue.put_nowait(msg)
             except posixmq.queue.Full:
                 # queue is full -> nobody's listening on the other side. nothing to do.
                 pass
