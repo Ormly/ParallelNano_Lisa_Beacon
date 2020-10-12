@@ -43,16 +43,18 @@ Agent is configured using the ```config.json``` file residing in the same librar
 **Daemon should be restarted to apply changes to config file**
 
 ## Message format on POSIX queue
-The messages posted onto the POSIX queue are pickled tuples containing address information of the reporting node 
-and a pickled dictionary containing the system information.
+The messages posted onto the POSIX queue are pickled dictionary containing the system information.
 System information sent as part of the beacon is a [pickled](https://docs.python.org/3.6/library/pickle.html) dictionary with the following structure
-```python
-# Tuple[bytes, Tuple[str, int]]
-
-(
-    b'\x80\x04\x95\x89\x00\x00\x00\x00\x00\x00\x00}\x94(\x8c\x08platform\x94\x8c,Linux-5.4.0-48-generic-x86_64-with-glibc2.29\x94\x8c\x06system\x94\x8c\x05Linux\x94\x8c\x03cpu\x94\x8c\x06x86_64\x94\x8c\tcpu_usage\x94G\x00\x00\x00\x00\x00\x00\x00\x00\x8c\tmem_usage\x94G@E]m_\xcc\xaevu.', 
-    ('127.0.0.1', 59338)  # sending node
-)
+```json
+{
+  "cpu":"x86_64",
+  "cpu_usage":3.7,
+  "hostname":"mario-virtual-machine",
+  "ip_address":"127.0.1.1",
+  "mem_usage":8.5540755014172,
+  "platform":"Linux-5.4.0-48-generic-x86_64-with-glibc2.29",
+  "system":"Linux"
+} 
 ```
 
 For the expected format of the pickled system information dictionary checkout [ParallelNano_Lisa_Beacon_Agent](https://github.com/Ormly/ParallelNano_Lisa_Beacon_Agent)
