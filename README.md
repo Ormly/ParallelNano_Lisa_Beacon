@@ -8,8 +8,8 @@ They can be read then by any interested party running on Lisa
 ```shell script
 sudo apt install python3-pip
 git clone https://github.com/Ormly/ParallelNano_Lisa_Beacon_Agent.git
-cd ParallelNano_Lisa_Beacon
-python3 setup install --user
+cd ParallelNano_Lisa_Beacon_Agent
+python3 setup.py install --user
 ``` 
 
 ## Usage
