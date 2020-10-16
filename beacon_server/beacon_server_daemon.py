@@ -4,12 +4,13 @@
 """
 The server component of the beacon monitoring system
 """
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Any
 import socket
 import json
 import sys
 import os
 import signal
+import pickle
 
 from ipcqueue import posixmq
 import daemon
@@ -47,8 +48,7 @@ class BeaconServer:
     def _init_queue(self):
         if not (isinstance(self.queue_id, str) and self.queue_id.startswith("/") and len(self.queue_id) < 255):
             raise ValueError("Invalid queue id")
-
-        self.ipc_queue = posixmq.Queue(name=self.queue_id, maxsize=self.queue_size)
+        self.ipc_queue = posixmq.Queue(name=self.queue_id)
 
     def start(self):
         """
@@ -57,9 +57,10 @@ class BeaconServer:
         :return:
         """
         while True:
-            msg = self.sock.recv(self.DEFAULT_BUFFER_SIZE)
+            msg, (ip, _) = self.sock.recvfrom(self.DEFAULT_BUFFER_SIZE)
+            msg_dict = self._inject_ip_addr_to_dict(msg, ip)
             try:
-                self.ipc_queue.put_nowait(msg)
+                self.ipc_queue.put_nowait(msg_dict)
             except posixmq.queue.Full:
                 # queue is full -> nobody's listening on the other side. nothing to do.
                 pass
@@ -74,6 +75,15 @@ class BeaconServer:
 
         if self.ipc_queue:
             self.ipc_queue.close()
+
+    @staticmethod
+    def _inject_ip_addr_to_dict(msg: bytes, ip: str) -> Dict[Any, Any]:
+        """
+        Unpickle dict, inject ip address, return
+        """
+        sys_info_dict = pickle.loads(msg)
+        sys_info_dict["ip_address"] = ip
+        return sys_info_dict
 
 
 class ServerFactory:
