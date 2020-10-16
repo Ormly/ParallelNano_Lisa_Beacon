@@ -7,6 +7,7 @@ They can be read then by any interested party running on Lisa
 ## Installation 
 ```shell script
 sudo apt install python3-pip
+sudo apt install libffi-dev
 git clone https://github.com/Ormly/ParallelNano_Lisa_Beacon.git
 cd ParallelNano_Lisa_Beacon
 python3 setup.py install --user
