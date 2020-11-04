@@ -11,6 +11,7 @@ import sys
 import os
 import signal
 import pickle
+import pathlib
 
 from ipcqueue import posixmq
 import daemon
@@ -122,7 +123,7 @@ class ServerFactory:
 
 def main(daemon_context: daemon.DaemonContext):
     factory = ServerFactory()
-    server = factory.from_config_file("config.json")
+    server = factory.from_config_file(str(pathlib.Path(__file__).parent) + "/config.json")
 
     # set termination callback
     daemon_context.signal_map[signal.SIGTERM] = server.cleanup
@@ -131,7 +132,7 @@ def main(daemon_context: daemon.DaemonContext):
 
 if __name__ == '__main__':
     # TODO: optionally get config file path from stdin
-    config_file = open("config.json", 'r')
+    config_file = open(str(pathlib.Path(__file__).parent) + "/config.json", 'r')
 
     with daemon.DaemonContext(
         files_preserve=[config_file],
