@@ -1,5 +1,5 @@
 {
-  "if_ip": "192.168.233.129",
+  "if_ip": "lisa",
   "listen_port": 4444,
   "queue_id": "/nodes_status",
   "queue_size": 20
